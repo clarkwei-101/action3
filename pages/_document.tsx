@@ -88,7 +88,7 @@ export default function MyDocument({ emotionStyleTags }: MyDocumentProps) {
             --color-warning: #f59e0b;
             --color-error: #ef4444;
           }
-          body { background: var(--bg-primary); }
+          body { background: var(--bg-primary) !important; }
         ` }} />
       </Head>
       <body style={{ background: '#0d0d14' }}>
