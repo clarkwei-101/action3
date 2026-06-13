@@ -91,7 +91,7 @@ export default function MyDocument({ emotionStyleTags }: MyDocumentProps) {
           body { background: var(--bg-primary); }
         ` }} />
       </Head>
-      <body>
+      <body style={{ background: '#0d0d14' }}>
       <InitColorSchemeScript defaultMode='dark' />
       <Main />
       <NextScript />
