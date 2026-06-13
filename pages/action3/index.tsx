@@ -53,7 +53,7 @@ export default function Action3Landing() {
       color: 'var(--text-primary)',
       overflow: 'auto',
     }}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(30px); }
           to { opacity: 1; transform: translateY(0); }
@@ -128,7 +128,7 @@ export default function Action3Landing() {
           background: rgba(255,255,255,0.05);
           transform: translateY(-1px);
         }
-      `}</style>
+      ` }} />
 
       {/* Hero Section */}
       <section style={{
