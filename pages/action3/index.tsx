@@ -3,6 +3,8 @@ import * as React from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default function Action3Landing() {
   const router = useRouter();
 
@@ -53,7 +55,7 @@ export default function Action3Landing() {
       color: 'var(--text-primary)',
       overflow: 'auto',
     }}>
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(30px); }
           to { opacity: 1; transform: translateY(0); }

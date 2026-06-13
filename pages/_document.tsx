@@ -66,6 +66,30 @@ export default function MyDocument({ emotionStyleTags }: MyDocumentProps) {
         {/* Style Sheets (injected and server-side) */}
         <meta name='emotion-insertion-point' content='' />
         {emotionStyleTags}
+        {/* Action3 Design System CSS Variables — must be in <head> before any component renders */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          :root {
+            --bg-primary: #0d0d14;
+            --bg-secondary: #131320;
+            --bg-card: #1a1a2e;
+            --bg-elevated: #252540;
+            --bg-hover: #2d2d4a;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-light: rgba(255, 255, 255, 0.10);
+            --accent-primary: #10b981;
+            --accent-primary-light: #34d399;
+            --accent-primary-dark: #059669;
+            --accent-secondary: #f59e0b;
+            --accent-secondary-light: #fbbf24;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-error: #ef4444;
+          }
+          body { background: var(--bg-primary); }
+        ` }} />
       </Head>
       <body>
       <InitColorSchemeScript />
