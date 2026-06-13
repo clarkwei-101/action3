@@ -1,0 +1,348 @@
+// Prisma is the ORM for server-side (API) access to the database
+//
+// This file defines the schema for the database.
+//  - make sure to run 'prisma generate' after making changes to this file
+//  - make sure to run 'prisma db push' to sync the remote database with the schema
+//
+// Database is optional: when the environment variables are not set, the database is not used at all.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL") // sqlite file path, e.g. file:./action3.db
+}
+
+// ============================================================
+// ACTION PRO: AI Goal Achievement System Models
+// ============================================================
+
+// User progress tracking (XP, level, streaks)
+model UserProgress {
+  id             String    @id @default("default")
+  totalXP        Int       @default(0)
+  level          Int       @default(1)
+  currentStreak  Int       @default(0)
+  longestStreak  Int       @default(0)
+  lastActiveDate DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+// Goals - user-defined objectives with multiple styles
+model Goal {
+  id                   String   @id @default(cuid())
+  title                String
+  description          String?
+  targetDays           Int
+  style                String   // guided|indoctrination|encouragement|strict|first_principles
+  status               String   @default("active") // active|completed|paused
+  totalProgress        Float    @default(0)
+  estimatedCompletion   DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  milestones           Milestone[]
+  tasks                DailyTask[]
+  resources            GoalResource[]
+}
+
+// Milestones - phase checkpoints within a goal
+model Milestone {
+  id          String   @id @default(cuid())
+  goalId     String
+  title      String
+  description String?
+  orderIndex Int
+  progress   Float    @default(0)
+  goal       Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  tasks      DailyTask[]
+  resources  MilestoneResource[]
+
+  @@index([goalId])
+}
+
+// Daily tasks - individual actionable items
+model DailyTask {
+  id            String    @id @default(cuid())
+  goalId       String
+  milestoneId   String?
+  title         String
+  description   String?
+  scheduledDate DateTime
+  status        String    @default("pending") // pending|completed|skipped
+  xpReward      Int       @default(10)
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  goal          Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  milestone     Milestone? @relation(fields: [milestoneId], references: [id])
+
+  @@index([goalId])
+  @@index([scheduledDate])
+  @@index([status])
+}
+
+// Achievements - unlockable badges with trigger conditions
+model Achievement {
+  id            String    @id @default(cuid())
+  key           String    @unique
+  name          String
+  description   String
+  icon          String
+  category      String    // starter|streak|milestone|style|master
+  triggerType   String    // event_count|streak|combination|milestone_reached|level_up
+  triggerConfig String    // JSON string with condition parameters
+  xpReward      Int
+  levelRequired Int       @default(1)
+  unlockedAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([key])
+  @@index([unlockedAt])
+}
+
+// Reminder configuration
+model Reminder {
+  id      String  @id @default(cuid())
+  type    String  // morning|evening
+  time    String  @default("08:00")
+  enabled Boolean @default(true)
+  message String?
+
+  @@index([type])
+}
+
+// Calendar events - user schedule data
+model CalendarEvent {
+  id        String   @id @default(cuid())
+  title     String
+  startTime DateTime
+  endTime   DateTime
+  type      String   @default("busy") // busy|free
+  source    String   @default("manual") // manual|ical|google
+  createdAt DateTime @default(now())
+
+  @@index([startTime])
+  @@index([endTime])
+}
+
+// ============================================================
+// Goal & Milestone Resources
+// ============================================================
+
+// Goal-level learning resources (videos, articles, courses)
+model GoalResource {
+  id        String   @id @default(cuid())
+  goalId    String
+  title     String
+  url       String
+  type      String   @default("article") // video|article|course|exercise|documentation|project|community
+  note      String?
+  watched   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  goal      Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@index([type])
+}
+
+// Milestone-level learning resources
+model MilestoneResource {
+  id          String   @id @default(cuid())
+  milestoneId String
+  title       String
+  url         String
+  type        String   @default("article") // video|article|course|exercise|documentation|project|community
+  note        String?
+  watched     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  milestone   Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+
+  @@index([milestoneId])
+  @@index([type])
+}
+
+// ============================================================
+// Browser Automation Models
+// ============================================================
+
+model SysBrowserConfig {
+  id          String   @id @default(cuid())
+  browserName String
+  uaConfig    String?
+  proxyIp     String?
+  proxyUser   String?
+  proxyPass   String?
+  launchArgs  String?
+  isolationCfg String?
+  isDefault   Boolean  @default(false)
+  status      String   @default("active")
+  createTime  DateTime @default(now())
+  updateTime  DateTime @updatedAt
+
+  @@index([isDefault])
+  @@index([status])
+}
+
+model SysBrowserSession {
+  id             String    @id @default(cuid())
+  sessionId      String    @unique
+  userId         String?
+  openTabNum     Int       @default(0)
+  currentUrl     String?
+  runLog         String?
+  screenshotLog  String?
+  proxyUsed      String?
+  uaUsed         String?
+  status         String    @default("active")
+  createTime     DateTime  @default(now())
+  closeTime      DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([createTime])
+}
+
+// ============================================================
+// ACTION PRO: Skill Tree & Learning Path Models
+// ============================================================
+
+// SkillNode - individual skill nodes in a skill tree
+model SkillNode {
+  id            String   @id @default(cuid())
+  skillId       String   // unique skill identifier (e.g., "python-basics", "react-hooks")
+  title         String   // display title
+  description   String?
+  difficulty    Int      @default(1) // 1=beginner, 2=intermediate, 3=advanced
+  tier          Int      @default(0) // 0=root, 1=tier1, 2=tier2...
+  category      String   @default("general") // frontend|backend|ai|general
+  xpReward      Int      @default(50)
+  icon          String   @default("circle")
+  positionX     Float    @default(0)
+  positionY     Float    @default(0)
+  isRoot        Boolean  @default(false)
+  resources     String?  // JSON array of resource URLs/titles
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relationships
+  masteries       SkillMastery[]
+  prerequisiteFor SkillEdge[]    @relation("PrerequisiteFor")
+  dependentFor    SkillEdge[]    @relation("DependentFor")
+
+  @@index([skillId])
+  @@index([category])
+  @@index([tier])
+}
+
+// SkillEdge - prerequisite relationships between nodes
+model SkillEdge {
+  id               String @id @default(cuid())
+  prerequisiteId   String // must complete this first
+  dependentId      String // this depends on prerequisite
+  strength         Int    @default(1) // 1=soft, 2=hard prerequisite
+  prerequisiteNode SkillNode @relation("PrerequisiteFor", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+  dependentNode    SkillNode @relation("DependentFor", fields: [dependentId], references: [id], onDelete: Cascade)
+
+  @@unique([prerequisiteId, dependentId])
+  @@index([prerequisiteId])
+  @@index([dependentId])
+}
+
+// LearningPath - a curated path through skill nodes for a specific goal
+model LearningPath {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  category     String   @default("general")
+  targetSkill  String?  // the main skill this path targets
+  isAIGenerated Boolean @default(false)
+  isActive     Boolean  @default(true)
+  xpTotal      Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  nodes        LearningPathNode[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
+// LearningPathNode - nodes assigned to a learning path
+model LearningPathNode {
+  id              String   @id @default(cuid())
+  learningPathId  String
+  skillNodeId     String
+  orderIndex      Int
+  estimatedHours  Float    @default(1)
+  learningPath    LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+
+  @@unique([learningPathId, skillNodeId])
+  @@index([learningPathId])
+}
+
+// SkillMastery - user's mastery level for each skill node
+model SkillMastery {
+  id             String    @id @default(cuid())
+  skillNodeId    String
+  masteryScore   Float     @default(0) // 0-100
+  practiceCount  Int       @default(0)
+  lastPracticed  DateTime?
+  firstMastered  DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  skillNode      SkillNode @relation(fields: [skillNodeId], references: [id], onDelete: Cascade)
+
+  @@unique([skillNodeId])
+  @@index([skillNodeId])
+  @@index([masteryScore])
+}
+
+// ============================================================
+// Legacy / Reference Models (preserved for compatibility)
+// ============================================================
+
+// Storage of Linked Data
+model LinkStorage {
+  id String @id @default(uuid())
+
+  ownerId    String
+  visibility String
+
+  dataType   String
+  dataTitle String?
+  dataSize  Int
+  data      String
+
+  upVotes    Int @default(0)
+  downVotes  Int @default(0)
+  flagsCount Int @default(0)
+  readCount  Int @default(0)
+  writeCount Int @default(1)
+
+  expiresAt DateTime?
+  deletionKey String
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// Action3 Push Notifications
+// ============================================================
+model PushSubscription {
+  id           String   @id @default(cuid())
+  endpoint     String   @unique
+  p256dh       String   // subscription keys
+  auth         String   // auth secret
+  userAgent    String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
