@@ -14,7 +14,7 @@ interface MyDocumentProps extends DocumentProps {
 
 export default function MyDocument({ emotionStyleTags }: MyDocumentProps) {
   return (
-    <Html lang='en' suppressHydrationWarning>
+    <Html lang='en' data-joy-color-scheme='dark' suppressHydrationWarning>
       <Head>
         {/* Meta (missing Title, set by the App or Page) */}
         <meta name='description' content={Brand.Meta.Description} />
@@ -92,7 +92,7 @@ export default function MyDocument({ emotionStyleTags }: MyDocumentProps) {
         ` }} />
       </Head>
       <body>
-      <InitColorSchemeScript />
+      <InitColorSchemeScript defaultMode='dark' />
       <Main />
       <NextScript />
       </body>
