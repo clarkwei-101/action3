@@ -1,5 +1,6 @@
 {
   "framework": "nextjs",
+  "project": "action3",
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
@@ -26,8 +27,5 @@
       ]
     }
   ],
-  "crons": [],
-  "experimental": {
-    "prerenderEarlyExit": false
-  }
+  "crons": []
 }
