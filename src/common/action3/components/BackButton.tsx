@@ -7,7 +7,7 @@ interface BackButtonProps {
   label?: string;
 }
 
-export function BackButton({ href = '/action3/goals', label = '返回' }: BackButtonProps) {
+export function BackButton({ href = '/action3/home', label = '返回' }: BackButtonProps) {
   const router = useRouter();
   const handleBack = () => {
     if (href.startsWith('/')) {

@@ -66,7 +66,7 @@ self.addEventListener('notificationclick', (event) => {
 
   event.notification.close();
 
-  const urlToOpen = event.notification.data?.url || event.notification.data?.urlToOpen || '/action3/goals';
+  const urlToOpen = event.notification.data?.url || event.notification.data?.urlToOpen || '/action3/home';
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {

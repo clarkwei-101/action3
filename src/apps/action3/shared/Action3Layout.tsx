@@ -34,10 +34,10 @@ export function Action3Layout({ children }: { children: React.ReactNode }) {
     }
   }, [bannerData]);
 
-  const currentPage = (pathname ?? '').replace('/action3/', '') || 'goals';
+  const currentPage = (pathname ?? '').replace('/action3/', '') || 'home';
 
   const navItems = [
-    { key: 'goals', label: '目标', icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5', href: '/action3/goals' },
+    { key: 'home', label: '目标', icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5', href: '/action3/home' },
     { key: 'recommend', label: '推荐', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', href: '/action3/recommend' },
     { key: 'skilltree', label: '技能树', icon: 'M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18', href: '/action3/skilltree' },
     { key: 'classroom', label: '课堂', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0M7 10a2 2 0 11-4 0 2 2 0 014 0z', href: '/action3/classroom' },
@@ -960,14 +960,14 @@ export function Action3Layout({ children }: { children: React.ReactNode }) {
 
         {/* Sidebar */}
         <nav className='sidebar'>
-          <div className='sidebar-logo' onClick={() => router.push('/action3/goals')}>
+          <div className='sidebar-logo' onClick={() => router.push('/action3/home')}>
             <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5'>
               <circle cx='12' cy='12' r='10' />
               <circle cx='12' cy='12' r='6' />
               <circle cx='12' cy='12' r='2' />
             </svg>
           </div>
-          <button className='sidebar-item' onClick={() => router.push('/action3/goals')} title='返回主界面'>
+          <button className='sidebar-item' onClick={() => router.push('/action3/home')} title='返回主界面'>
             <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
               <path d='M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z' />
               <polyline points='9 22 9 12 15 12 15 22' />

@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       icon = '/icons/icon-192.png',
       badge = '/icons/badge-72.png',
       tag = 'action3-notification',
-      url = '/action3/goals',
+      url = '/action3/home',
       requireInteraction = false,
       actions = [],
       data = {},

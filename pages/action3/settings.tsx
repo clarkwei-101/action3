@@ -394,7 +394,7 @@ function SettingsPageContent() {
                 const result = await push.sendNotification({
                   title: locale === 'en' ? 'Action3 Push Test' : locale === 'ja' ? 'Action3 プッシュテスト' : locale === 'ko' ? 'Action3 푸시 테스트' : 'Action3 推送测试',
                   body: locale === 'en' ? 'Push notification configured successfully!' : locale === 'ja' ? 'プッシュ通知の設定に成功しました！' : locale === 'ko' ? '푸시 알림이 성공적으로 구성되었습니다！' : '推送通知配置成功！',
-                  url: '/action3/goals',
+                  url: '/action3/home',
                 });
                 if (result) {
                   alert(locale === 'en' ? `Push sent! (${result.sent}/${result.total})` :

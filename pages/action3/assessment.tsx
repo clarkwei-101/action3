@@ -178,7 +178,7 @@ function AssessmentPage() {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerLeft}>
-          <button style={styles.backBtn} onClick={() => router.push('/action3/goals')}>
+          <button style={styles.backBtn} onClick={() => router.push('/action3/home')}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
@@ -209,7 +209,7 @@ function AssessmentPage() {
             {goals.length === 0 ? (
               <div style={styles.emptyCard}>
                 <p style={styles.emptyText}>暂无目标，请先创建目标</p>
-                <button style={styles.createBtn} onClick={() => router.push('/action3/goals')}>
+                <button style={styles.createBtn} onClick={() => router.push('/action3/home')}>
                   去创建目标
                 </button>
               </div>
@@ -609,7 +609,7 @@ function AssessmentPage() {
             <button style={styles.backBtn2} onClick={() => { setPhase('select'); setResult(null); setQuizData(null); setAnswers({}); }}>
               重新评估
             </button>
-            <button style={styles.continueBtn} onClick={() => router.push('/action3/goals')}>
+            <button style={styles.continueBtn} onClick={() => router.push('/action3/home')}>
               返回目标页
             </button>
           </div>
