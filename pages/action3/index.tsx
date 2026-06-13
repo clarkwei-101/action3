@@ -50,9 +50,9 @@ export default function Action3Landing() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'var(--bg-primary)',
+      background: '#0d0d14',
       fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif',
-      color: 'var(--text-primary)',
+      color: '#ffffff',
       overflow: 'auto',
     }}>
       <style suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `
@@ -249,13 +249,13 @@ export default function Action3Landing() {
             3
           </span>
           <br />
-          <span style={{ color: 'var(--text-primary)' }}>学习目标管理</span>
+          <span style={{ color: '#ffffff' }}>学习目标管理</span>
         </h1>
 
         {/* Subtitle */}
         <p className='landing-subtitle' style={{
           fontSize: 'clamp(16px, 2.5vw, 20px)',
-          color: 'var(--text-secondary)',
+          color: '#94a3b8',
           textAlign: 'center',
           maxWidth: '560px',
           lineHeight: 1.6,
@@ -310,7 +310,7 @@ export default function Action3Landing() {
               background: 'rgba(255,255,255,0.03)',
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
-              color: 'var(--text-secondary)',
+              color: '#94a3b8',
               fontSize: '16px',
               fontWeight: 600,
               cursor: 'pointer',
@@ -330,7 +330,7 @@ export default function Action3Landing() {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '8px',
-          color: 'var(--text-muted)',
+          color: '#64748b',
           fontSize: '12px',
           animation: 'blink 2s ease infinite',
         }}>
@@ -353,7 +353,7 @@ export default function Action3Landing() {
           <h2 style={{
             fontSize: 'clamp(28px, 5vw, 42px)',
             fontWeight: 800,
-            color: 'var(--text-primary)',
+            color: '#ffffff',
             marginBottom: '16px',
             letterSpacing: '-0.02em',
           }}>
@@ -361,7 +361,7 @@ export default function Action3Landing() {
           </h2>
           <p style={{
             fontSize: '18px',
-            color: 'var(--text-secondary)',
+            color: '#94a3b8',
             maxWidth: '480px',
             margin: '0 auto',
             lineHeight: 1.6,
@@ -407,14 +407,14 @@ export default function Action3Landing() {
               <h3 style={{
                 fontSize: '18px',
                 fontWeight: 700,
-                color: 'var(--text-primary)',
+                color: '#ffffff',
                 marginBottom: '8px',
               }}>
                 {feature.title}
               </h3>
               <p style={{
                 fontSize: '14px',
-                color: 'var(--text-secondary)',
+                color: '#94a3b8',
                 lineHeight: 1.6,
               }}>
                 {feature.desc}
@@ -450,14 +450,14 @@ export default function Action3Landing() {
           <h2 style={{
             fontSize: '28px',
             fontWeight: 800,
-            color: 'var(--text-primary)',
+            color: '#ffffff',
             marginBottom: '12px',
           }}>
             准备好开始了吗？
           </h2>
           <p style={{
             fontSize: '16px',
-            color: 'var(--text-secondary)',
+            color: '#94a3b8',
             marginBottom: '32px',
           }}>
             你的第一个 AI 规划目标，等你创建
