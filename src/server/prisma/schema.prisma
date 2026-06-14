@@ -11,8 +11,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL") // sqlite file path, e.g. file:./action3.db
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Neon serverless Postgres via Vercel Marketplace
 }
 
 // ============================================================
