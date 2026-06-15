@@ -75,6 +75,8 @@ export interface ConversationContext {
   dailyProgress: number;
   /** Client-supplied local hour (0-23) so the greeting matches the user's wall clock. */
   clientHour?: number;
+  /** Client-supplied local minute (0-59) for precise time reporting. */
+  clientMinute?: number;
   /** Client-supplied locale for proper language-specific greetings. */
   locale?: 'zh' | 'en' | 'ja' | 'ko';
 }
@@ -140,25 +142,29 @@ export async function generateMorningGreeting(context: ConversationContext): Pro
   const pendingCount = context.pendingTasks.length;
   const completedCount = context.completedTasks.length;
 
-  // Build a human-readable timestamp matching the client's local hour.
-  // Use the client hour as the source of truth to keep the AI in sync.
+  // Build a human-readable timestamp matching the client's local clock.
+  // Use the client hour/minute as the source of truth to keep the AI in sync.
   const localHour = typeof context.clientHour === 'number' ? context.clientHour : new Date().getHours();
+  const localMinute = typeof context.clientMinute === 'number' ? context.clientMinute : new Date().getMinutes();
   const timeLabel = (() => {
     if (localHour >= 5 && localHour < 12) return '上午';
     if (localHour >= 12 && localHour < 18) return '下午';
     if (localHour >= 18 && localHour < 23) return '晚上';
     return '深夜';
   })();
+  const hh = String(localHour).padStart(2, '0');
+  const mm = String(localMinute).padStart(2, '0');
+  const timeStr = `${hh}:${mm}`;
 
   const systemPrompt = `你是Action3学习助手${context.userName}的专属语音播报员。
 ${style.persona}
 
-当前时段: ${timeLabel}（${localHour}点整，按用户本地时区）
+当前时间: ${timeStr}（${timeLabel}，按用户本地时区）
 今日进度: ${context.dailyProgress}%
 
 请生成一段简短有力的早晨问候（不超过150字），内容包含：
 1. 友好称呼
-2. 当前时间
+2. 当前时间（必须使用上面"当前时间"中的精确时间，例如"${timeStr}"或"${timeLabel}${localHour}点${localMinute}分"，绝对不要使用"整点"或"两点整"这种模糊表述）
 3. 今日任务概览（待完成${pendingCount}项，已完成${completedCount}项）
 4. 根据学习风格${context.style}给予适当的激励
 

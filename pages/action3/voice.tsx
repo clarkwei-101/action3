@@ -1577,6 +1577,7 @@ function VoicePageContent() {
         completedTasks: completedTasks.map(t => ({ title: t.title })),
         dailyProgress: pendingTasks.length > 0 ? Math.round((completedTasks.length / (pendingTasks.length + completedTasks.length)) * 100) : 100,
         clientHour: new Date().getHours(),
+        clientMinute: new Date().getMinutes(),
         locale: locale === 'en' ? 'en' : locale === 'ja' ? 'ja' : locale === 'ko' ? 'ko' : 'zh',
       }),
     })
