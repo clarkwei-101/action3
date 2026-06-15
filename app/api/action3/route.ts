@@ -793,12 +793,14 @@ export async function POST(req: Request) {
     // Voice Assistant Actions
     // ============================================================
     if (action === 'voiceAssistant.greeting') {
-      const { userName, style, pendingTasks, completedTasks, dailyProgress } = body as {
+      const { userName, style, pendingTasks, completedTasks, dailyProgress, clientHour, locale } = body as {
         userName?: string;
         style?: string;
         pendingTasks?: Array<{ title: string; goalTitle?: string }>;
         completedTasks?: Array<{ title: string; goalTitle?: string }>;
         dailyProgress?: number;
+        clientHour?: number;
+        locale?: 'zh' | 'en' | 'ja' | 'ko';
       };
       const { generateMorningGreeting } = await import('~/server/services/action3-voice-assistant.service');
       const greeting = await generateMorningGreeting({
@@ -807,6 +809,8 @@ export async function POST(req: Request) {
         pendingTasks: pendingTasks || [],
         completedTasks: completedTasks || [],
         dailyProgress: dailyProgress || 0,
+        clientHour: typeof clientHour === 'number' ? clientHour : undefined,
+        locale: locale || 'zh',
       });
       return NextResponse.json({ text: greeting, shouldSpeak: true });
     }

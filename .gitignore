@@ -52,3 +52,4 @@ test-results/
 # Temp files
 *.tmp
 *.temp
+.env*

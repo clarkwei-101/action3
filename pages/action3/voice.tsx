@@ -913,10 +913,6 @@ const BROADCAST_STYLES: Record<BroadcastStyle, {
   nameEn: string;
   nameJa: string;
   nameKo: string;
-  greeting: string;
-  greetingEn: string;
-  greetingJa: string;
-  greetingKo: string;
   voiceModifier: number;
 }> = {
   guided: {
@@ -924,10 +920,6 @@ const BROADCAST_STYLES: Record<BroadcastStyle, {
     nameEn: 'Guided',
     nameJa: 'ガイド式',
     nameKo: '안내식',
-    greeting: '早上好，让我们开始今天的行动...',
-    greetingEn: 'Good morning, let\'s start today\'s actions...',
-    greetingJa: 'おはようございます、今日のアクションを始めましょう...',
-    greetingKo: '좋은 아침이에요, 오늘의 행동을 시작합시다...',
     voiceModifier: 0.9,
   },
   indoctrination: {
@@ -935,10 +927,6 @@ const BROADCAST_STYLES: Record<BroadcastStyle, {
     nameEn: 'Indoctrination',
     nameJa: '洗脳式',
     nameKo: '세뇌식',
-    greeting: '专注！执行！成就非凡！今日任务必须完成！',
-    greetingEn: 'Focus! Execute! Achieve greatness! Today\'s tasks must be completed!',
-    greetingJa: '集中！実行！偉大さを成就！今日のタスクを完了する必要があります！',
-    greetingKo: '집중! 실행! 위대함 달성! 오늘의 작업을 완료해야 합니다!',
     voiceModifier: 1.1,
   },
   encouragement: {
@@ -946,10 +934,6 @@ const BROADCAST_STYLES: Record<BroadcastStyle, {
     nameEn: 'Encouragement',
     nameJa: '励まし式',
     nameKo: '격려식',
-    greeting: '美好的一天开始了，你已经做好了准备，让我们一起加油！',
-    greetingEn: 'A beautiful day has begun, you are ready, let\'s do this together!',
-    greetingJa: '素晴らしい一日が始まりました、あなたは準備ができています、一緒に頑張りましょう！',
-    greetingKo: '아름다운 하루가 시작되었습니다, 당신은 준비가 되었습니다, 같이頑張ましょう!',
     voiceModifier: 0.95,
   },
   strict: {
@@ -957,10 +941,6 @@ const BROADCAST_STYLES: Record<BroadcastStyle, {
     nameEn: 'Strict',
     nameJa: '厳格式',
     nameKo: '엄격식',
-    greeting: '现在时间是早上八点。今日任务清单如下，请严格执行。',
-    greetingEn: 'It is now 8 AM. Today\'s task list is as follows, please execute strictly.',
-    greetingJa: '現在の時刻は午前8時です。今日のタスクリストは以下の通りです、严格执行してください。',
-    greetingKo: '지금은 오전 8시입니다. 오늘의 작업 목록은 다음과 같습니다, 엄격히 실행해 주세요.',
     voiceModifier: 1.0,
   },
   first_principles: {
@@ -968,13 +948,150 @@ const BROADCAST_STYLES: Record<BroadcastStyle, {
     nameEn: 'First Principles',
     nameJa: '第一原理',
     nameKo: '첫 번째 원리',
-    greeting: '让我们从最基本的逻辑审视今天的任务...',
-    greetingEn: 'Let\'s examine today\'s tasks from the most fundamental logic...',
-    greetingJa: '最も基本的な論理から今日のタスクを审视しましょう...',
-    greetingKo: '가장 기본적인 논리에서 오늘의 작업을审视합시다...',
     voiceModifier: 0.85,
   },
 };
+
+// Time-aware greeting table. Selected by `now.getHours()` so the
+// broadcast matches the user's actual local time of day.
+type TimeBucket = 'morning' | 'afternoon' | 'evening' | 'night';
+type LocaleKey = 'zh' | 'en' | 'ja' | 'ko';
+
+const GREETING_TABLE: Record<LocaleKey, Record<TimeBucket, Record<BroadcastStyle, string>>> = {
+  zh: {
+    morning: {
+      guided: '早上好，让我们开始今天的行动。',
+      indoctrination: '专注！执行！成就非凡！今日任务必须完成！',
+      encouragement: '美好的一天开始了，你已经做好了准备，让我们一起加油！',
+      strict: '现在是早上。今日任务清单已就绪，请严格执行。',
+      first_principles: '让我们从最基本的逻辑审视今天的任务。',
+    },
+    afternoon: {
+      guided: '下午好，继续保持专注，把今天的任务完成。',
+      indoctrination: '不要松懈！下午正是拉开差距的时候，今日任务必须完成！',
+      encouragement: '下午好！你已经走在正确的路上了，继续加油！',
+      strict: '现在是下午。今日剩余任务必须立刻完成。',
+      first_principles: '下午是回顾与反思的好时机，让我们从最基本的逻辑审视剩余任务。',
+    },
+    evening: {
+      guided: '晚上好，整理一下今天的学习，让一天有完美的收尾。',
+      indoctrination: '晚上的时间不能浪费，把今天未完成的任务清零！',
+      encouragement: '晚上好！一天结束了，你比昨天更优秀，为自己鼓掌！',
+      strict: '现在是晚上。今日任务清零，不允许遗留。',
+      first_principles: '晚上适合复盘，让我们从最本质的逻辑回顾今天的学习。',
+    },
+    night: {
+      guided: '夜深了，记得早点休息，明天还有新任务在等你。',
+      indoctrination: '熬夜伤身，但如果你还没完成任务，明早要加倍补上。',
+      encouragement: '夜深了，你已经做得很好了，记得休息哦。',
+      strict: '深夜了。立即睡觉，明日 6 点起床补做。',
+      first_principles: '夜深了，带着今天最本质的思考入睡吧。',
+    },
+  },
+  en: {
+    morning: {
+      guided: 'Good morning, let\'s start today\'s actions.',
+      indoctrination: 'Focus! Execute! Achieve greatness! Today\'s tasks must be completed!',
+      encouragement: 'A beautiful morning has begun, you are ready, let\'s do this together!',
+      strict: 'It is morning. Today\'s task list is ready, please execute strictly.',
+      first_principles: 'Let\'s examine today\'s tasks from the most fundamental logic.',
+    },
+    afternoon: {
+      guided: 'Good afternoon, stay focused and finish today\'s tasks.',
+      indoctrination: 'No slacking! The afternoon is when you pull ahead. Today\'s tasks must be done!',
+      encouragement: 'Good afternoon! You are on the right track, keep going!',
+      strict: 'It is afternoon. Remaining tasks must be completed now.',
+      first_principles: 'The afternoon is a great time to review. Let\'s examine the remaining tasks from first principles.',
+    },
+    evening: {
+      guided: 'Good evening, wrap up today\'s learning for a clean finish.',
+      indoctrination: 'Don\'t waste the evening. Zero out any unfinished tasks today!',
+      encouragement: 'Good evening! You\'re better than yesterday, give yourself a hand!',
+      strict: 'It is evening. Today\'s tasks must be cleared, no leftovers.',
+      first_principles: 'Evening is perfect for reflection. Let\'s review today\'s learning from first principles.',
+    },
+    night: {
+      guided: 'It\'s late, get some rest. New tasks await you tomorrow.',
+      indoctrination: 'Late nights hurt you, but if you haven\'t finished, you\'ll double up tomorrow morning.',
+      encouragement: 'It\'s late, you\'ve done great. Remember to rest.',
+      strict: 'It is late at night. Sleep now, wake at 6 AM to catch up.',
+      first_principles: 'It\'s late. Sleep with today\'s deepest insights.',
+    },
+  },
+  ja: {
+    morning: {
+      guided: 'おはようございます、今日のアクションを始めましょう。',
+      indoctrination: '集中！実行！偉大さを成就！今日のタスクを完了する必要があります！',
+      encouragement: '素晴らしい朝が始まりました、あなたは準備ができています、一緒に頑張りましょう！',
+      strict: '現在は朝です。今日のタスクリストは準備できています、厳しく実行してください。',
+      first_principles: '最も基本的な論理から今日のタスクを审视しましょう。',
+    },
+    afternoon: {
+      guided: 'こんにちは、集中力を保って、今日のタスクを完成させましょう。',
+      indoctrination: '油断しないでください！午後は差をつける時です、今日のタスクを完了してください！',
+      encouragement: 'こんにちは！正しい道を歩んでいます、頑張り続けましょう！',
+      strict: '現在は午後です。残りのタスクを今すぐ完了してください。',
+      first_principles: '午後は振り返りに最適な時間です。残りのタスクを第一原理で审视しましょう。',
+    },
+    evening: {
+      guided: 'こんばんは、今日の学習を整理して、完璧な一日を締めくくりましょう。',
+      indoctrination: '夜の時間を無駄にしないでください。今日未完了のタスクをゼロにしましょう！',
+      encouragement: 'こんばんは！昨日より成長しています、自分を褒めてあげてください！',
+      strict: '現在は夜です。今日のタスクをゼロにしてください、残し禁止。',
+      first_principles: '夜は振り返りに最適です。今日の学習を最も本質的な論理で振り返りましょう。',
+    },
+    night: {
+      guided: '夜更かしです、早く休んでください。明日も新しいタスクが待っています。',
+      indoctrination: '夜更かしは体に悪いですが、もしタスクが終わっていないなら、明日の朝に二倍補完してください。',
+      encouragement: '夜更かしです、よく頑張りました、ゆっくり休んでください。',
+      strict: '深夜です。今すぐ寝てください、明日6時に起きて補完。',
+      first_principles: '夜更かしです。今日の最も本質的な思考と共に眠りましょう。',
+    },
+  },
+  ko: {
+    morning: {
+      guided: '좋은 아침이에요, 오늘의 행동을 시작합시다.',
+      indoctrination: '집중! 실행! 위대함 달성! 오늘의 작업을 완료해야 합니다!',
+      encouragement: '아름다운 아침이 시작되었습니다, 당신은 준비가 되었습니다, 같이頑張りましょう!',
+      strict: '지금은 아침입니다. 오늘의 작업 목록이 준비되었습니다, 엄격히 실행해 주세요.',
+      first_principles: '가장 기본적인 논리에서 오늘의 작업을 审视합시다.',
+    },
+    afternoon: {
+      guided: '좋은 오후입니다, 집중력을 유지하며 오늘의 작업을 마치세요.',
+      indoctrination: '게으름 피우지 마세요! 오후는 차이를 만드는 시간입니다, 오늘의 작업을 완료하세요!',
+      encouragement: '좋은 오후입니다! 올바른 길에 있습니다, 계속 힘내세요!',
+      strict: '지금은 오후입니다. 남은 작업을 지금 완료하세요.',
+      first_principles: '오후는 되돌아보기에 좋은 시간입니다. 남은 작업을 첫 번째 원리로 审视합시다.',
+    },
+    evening: {
+      guided: '좋은 저녁입니다, 오늘의 학습을 정리하여 완벽한 하루를 마무리하세요.',
+      indoctrination: '저녁 시간을 낭비하지 마세요. 오늘 미완료 작업을 0으로 만드세요!',
+      encouragement: '좋은 저녁입니다! 어제보다 나아졌습니다, 자신을 칭찬해 주세요!',
+      strict: '지금은 저녁입니다. 오늘의 작업을 정리하세요, 남기지 마세요.',
+      first_principles: '저녁은 회고에 완벽합니다. 오늘의 학습을 가장 본질적인 논리로 돌아봅시다.',
+    },
+    night: {
+      guided: '늦은 시간입니다, 일찍 주무세요. 내일도 새로운 작업이 기다리고 있습니다.',
+      indoctrination: '야근은 몸에 해롭지만, 작업을 마치지 못했다면 내일 아침에 두 배로 보완하세요.',
+      encouragement: '늦은 시간입니다, 정말 잘했어요, 푹 쉬세요.',
+      strict: '심야입니다. 즉시 주무세요, 내일 6시에 일어나 보완하세요.',
+      first_principles: '늦은 시간입니다. 오늘의 가장 본질적인 사고와 함께 주무세요.',
+    },
+  },
+};
+
+function getTimeBucket(hour: number): TimeBucket {
+  if (hour >= 5 && hour < 12) return 'morning';
+  if (hour >= 12 && hour < 18) return 'afternoon';
+  if (hour >= 18 && hour < 23) return 'evening';
+  return 'night';
+}
+
+function getTimeAwareGreeting(style: BroadcastStyle, hour: number, locale: string): string {
+  const lang: LocaleKey =
+    locale === 'en' ? 'en' : locale === 'ja' ? 'ja' : locale === 'ko' ? 'ko' : 'zh';
+  return GREETING_TABLE[lang][getTimeBucket(hour)][style];
+}
 
 // ============================================================
 // Web Speech API Functions
@@ -1459,6 +1576,8 @@ function VoicePageContent() {
         pendingTasks: pendingTasks.map(t => ({ title: t.title })),
         completedTasks: completedTasks.map(t => ({ title: t.title })),
         dailyProgress: pendingTasks.length > 0 ? Math.round((completedTasks.length / (pendingTasks.length + completedTasks.length)) * 100) : 100,
+        clientHour: new Date().getHours(),
+        locale: locale === 'en' ? 'en' : locale === 'ja' ? 'ja' : locale === 'ko' ? 'ko' : 'zh',
       }),
     })
       .then(res => res.json())
@@ -1540,10 +1659,7 @@ function VoicePageContent() {
     const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
     const getGreeting = () => {
-      if (locale === 'en') return styleConfig.greetingEn;
-      if (locale === 'ja') return styleConfig.greetingJa;
-      if (locale === 'ko') return styleConfig.greetingKo;
-      return styleConfig.greeting;
+      return getTimeAwareGreeting(settings.style, now.getHours(), locale);
     };
 
     const getTimePhrase = () => {

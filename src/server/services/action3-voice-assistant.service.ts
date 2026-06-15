@@ -73,6 +73,10 @@ export interface ConversationContext {
   pendingTasks: Array<{ title: string; goalTitle?: string }>;
   completedTasks: Array<{ title: string; goalTitle?: string }>;
   dailyProgress: number;
+  /** Client-supplied local hour (0-23) so the greeting matches the user's wall clock. */
+  clientHour?: number;
+  /** Client-supplied locale for proper language-specific greetings. */
+  locale?: 'zh' | 'en' | 'ja' | 'ko';
 }
 
 export interface AssistantResponse {
@@ -118,19 +122,38 @@ const STYLE_PROMPTS: Record<string, { persona: string; voiceModifier: number; gr
 
 export async function generateMorningGreeting(context: ConversationContext): Promise<string> {
   const style = STYLE_PROMPTS[context.style] || STYLE_PROMPTS.guided;
-  const now = new Date();
-  const hour = now.getHours();
+      // Prefer the client-supplied local hour to avoid server timezone drift
+      // (Vercel regions run in UTC, but the user expects greetings in their own time).
+      const hour = typeof context.clientHour === 'number'
+        ? context.clientHour
+        : new Date().getHours();
+      const userLocale =
+        context.locale === 'en' ? 'en' : context.locale === 'ja' ? 'ja' : context.locale === 'ko' ? 'ko' : 'zh';
 
-  const timeGreeting = hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
-  const styleGreeting = style.greeting;
+      const timeGreeting =
+        hour >= 5 && hour < 12 ? { zh: '早上好', en: 'Good morning', ja: 'おはようございます', ko: '좋은 아침이에요' }[userLocale]
+        : hour >= 12 && hour < 18 ? { zh: '下午好', en: 'Good afternoon', ja: 'こんにちは', ko: '좋은 오후입니다' }[userLocale]
+        : hour >= 18 && hour < 23 ? { zh: '晚上好', en: 'Good evening', ja: 'こんばんは', ko: '좋은 저녁입니다' }[userLocale]
+        : { zh: '夜深了', en: 'It is late', ja: '夜更かしです', ko: '늦은 시간입니다' }[userLocale];
+      const styleGreeting = style.greeting;
 
   const pendingCount = context.pendingTasks.length;
   const completedCount = context.completedTasks.length;
 
+  // Build a human-readable timestamp matching the client's local hour.
+  // Use the client hour as the source of truth to keep the AI in sync.
+  const localHour = typeof context.clientHour === 'number' ? context.clientHour : new Date().getHours();
+  const timeLabel = (() => {
+    if (localHour >= 5 && localHour < 12) return '上午';
+    if (localHour >= 12 && localHour < 18) return '下午';
+    if (localHour >= 18 && localHour < 23) return '晚上';
+    return '深夜';
+  })();
+
   const systemPrompt = `你是Action3学习助手${context.userName}的专属语音播报员。
 ${style.persona}
 
-当前时间: ${now.toLocaleString('zh-CN')}
+当前时段: ${timeLabel}（${localHour}点整，按用户本地时区）
 今日进度: ${context.dailyProgress}%
 
 请生成一段简短有力的早晨问候（不超过150字），内容包含：

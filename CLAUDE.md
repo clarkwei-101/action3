@@ -282,5 +282,6 @@ As a side note, the product tiers (independent, non-VC-funded) are: **Open** (se
 - `browser.tsx` at `pages/action3/browser.tsx` - Playwright-based browser control, 3-section layout (toolbar + viewport + log), 200px right sidebar for quick actions
 - `replace_all` on JSX files with `'>'` characters (e.g., `<div>}` patterns) can silently produce `}>` instead of `}} />` self-closing tags; always run `tsc --noEmit` after replace_all on JSX to catch cascade type errors
 - `recommend.tsx` at `pages/action3/recommend.tsx` - skill/path recommendation tabs with grid/flex layouts, inline styles with fadeInUp animations; `calendar.tsx` also uses inline `<style>` blocks with custom CSS classes alongside the global liquid glass system
+- `/action3` is now the landing page (previously a redirect to `/action3/goals`); the main operational page is at `/action3/home` (formerly `goals.tsx` renamed to `home.tsx`)
 - Liquid Glass design system lives in `Action3Layout.tsx` as both `.lg-*` (short) and `.glass-*` (full) global classes plus `--glass-*` CSS variables; page-level `<style>` blocks in components use their own class names independently
 - 内置浏览器初始化默认页面由 `browserInitUrl` 状态控制，设置该状态即可改变启动页面
