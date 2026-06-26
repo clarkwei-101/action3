@@ -585,17 +585,68 @@ export async function POST(req: Request) {
     if (action === 'progress.get') {
       const { PrismaClient } = await import('@prisma/client');
       const prisma = new PrismaClient();
-      const progress = await prisma.userProgress.findFirst();
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const [progress, todayTasks] = await Promise.all([
+        prisma.userProgress.findFirst(),
+        prisma.dailyTask.findMany({
+          where: { scheduledDate: { gte: today, lt: tomorrow } },
+        }),
+      ]);
+
+      const completedToday = todayTasks.filter(t => t.status === 'completed').length;
+      const totalToday = todayTasks.length;
+      const todayProgress = totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : 0;
+
       await prisma.$disconnect();
-      return NextResponse.json(progress || {
-        id: 'default',
-        totalXP: 0,
-        level: 1,
-        currentStreak: 0,
-        longestStreak: 0,
-        totalGoalsCompleted: 0,
-        totalTasksCompleted: 0,
+      return NextResponse.json({
+        ...(progress || {
+          id: 'default',
+          totalXP: 0,
+          level: 1,
+          currentStreak: 0,
+          longestStreak: 0,
+          totalGoalsCompleted: 0,
+          totalTasksCompleted: 0,
+        }),
+        todayProgress,
+        todayCompleted: completedToday,
+        todayTotal: totalToday,
       });
+    }
+
+    if (action === 'xp.add') {
+      const { PrismaClient } = await import('@prisma/client');
+      const prisma = new PrismaClient();
+      const { amount } = body as { amount: number };
+
+      let progress = await prisma.userProgress.findFirst();
+      if (!progress) {
+        progress = await prisma.userProgress.create({
+          data: {
+            id: 'default',
+            totalXP: amount,
+            level: 1,
+            currentStreak: 0,
+            longestStreak: 0,
+          },
+        });
+      } else {
+        const newXP = progress.totalXP + (amount || 0);
+        // Level up: every 1000 XP = 1 level
+        const newLevel = Math.floor(newXP / 1000) + 1;
+        progress = await prisma.userProgress.update({
+          where: { id: progress.id },
+          data: { totalXP: newXP, level: newLevel },
+        });
+      }
+
+      await prisma.$disconnect();
+      return NextResponse.json({ totalXP: progress.totalXP, level: progress.level, leveledUp: progress.totalXP >= 1000 });
     }
 
     if (action === 'progress.updateStreak') {

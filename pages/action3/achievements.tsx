@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { withNextJSPerPageLayout } from '~/common/layout/withLayout';
 import { Action3Layout } from '~/apps/action3/shared/Action3Layout';
 import { useAction3Achievements, useAction3Progress } from '~/common/action3/api-hooks';
+import { useAction3Store } from '~/common/action3/action3-store';
 import { useTranslation } from '~/common/action3/i18n';
 
 // ============================================================
@@ -772,6 +773,19 @@ function AchievementsPageContent() {
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
   const { data: achievements } = useAction3Achievements();
   const { data: progressData } = useAction3Progress();
+  const { state, updateUser } = useAction3Store();
+
+  // Sync event-bus user state with DB progress data
+  React.useEffect(() => {
+    const prog = (progressData as Record<string, unknown>) ?? {};
+    if (prog.totalXP !== undefined || prog.level !== undefined || prog.currentStreak !== undefined) {
+      updateUser({
+        totalXP: (prog.totalXP as number) ?? 0,
+        level: (prog.level as number) ?? 1,
+        currentStreak: (prog.currentStreak as number) ?? 0,
+      });
+    }
+  }, [progressData, updateUser]);
 
   // data shape: achievements list
   const userStats = useMemo(() => {

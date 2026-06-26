@@ -4,11 +4,12 @@ import * as React from 'react';
 import { useState, useEffect, Component, ReactNode } from 'react';
 import { withNextJSPerPageLayout } from '~/common/layout/withLayout';
 import { Action3Layout } from '~/apps/action3/shared/Action3Layout';
-import { useAction3Goals, useAction3GoalCreate, useAction3GoalComplete, useAction3GoalDelete, useAction3TasksByGoal, useAction3TaskComplete, useAction3AIWorkflowGenerate, useAction3AIWorkflowCreate, useAction3ResearchMutation, useAction3MilestoneResearchMutation, useAction3Progress } from '~/common/action3/api-hooks';
+import { useAction3Goals, useAction3GoalCreate, useAction3GoalComplete, useAction3GoalDelete, useAction3TasksByGoal, useAction3TaskComplete, useAction3AIWorkflowGenerate, useAction3AIWorkflowCreate, useAction3ResearchMutation, useAction3MilestoneResearchMutation, useAction3Progress, useAction3SkillTreeMasteries, useAction3SkillTreeNodes, useAction3XPAdd } from '~/common/action3/api-hooks';
 import { MilestoneQuizModal } from '~/common/action3/components/MilestoneQuizModal';
 import { YoutubeSummaryModal } from '~/common/action3/components/YoutubeSummaryModal';
 import { useTranslation } from '~/common/action3/i18n';
 import { useAction3Store, type Action3Event } from '~/common/action3/action3-store';
+import { ProgressRing, FlameIcon, LevelBadge, BentoCard, StatCounter, SkillRadar } from './test-dashboard';
 import type { Goal, DailyTask } from '@prisma/client';
 
 // ============================================================
@@ -894,6 +895,7 @@ function GoalDetailView({
   const { data: rawTasks, refetch, isLoading: isLoadingTasks, error: tasksError } = useAction3TasksByGoal(goal.id);
   const tasks = React.useMemo(() => (rawTasks || []) as TaskWithMilestone[], [rawTasks]);
   const completeTask = useAction3TaskComplete();
+  const addXP = useAction3XPAdd();
   const completeGoal = useAction3GoalComplete();
   const deleteGoal = useAction3GoalDelete();
   const researchMutation = useAction3ResearchMutation();
@@ -948,13 +950,16 @@ function GoalDetailView({
       const task = tasks.find(t => t.id === taskId);
       await completeTask.mutateAsync(taskId);
       if (task) {
+        // Add XP
+        addXP.mutate(task.xpReward || 10);
+        // Dispatch event
         dispatchEvent?.({
           type: 'TASK_COMPLETED',
           goalId: goal.id,
           milestoneId: task.milestone?.id ?? '',
           taskId,
           taskTitle: task.title,
-          xpEarned: 10,
+          xpEarned: task.xpReward || 10,
         });
       }
       refetch();
@@ -967,6 +972,8 @@ function GoalDetailView({
     try {
       setIsCompletingGoal(true);
       await completeGoal.mutateAsync(goal.id);
+      addXP.mutate(200); // goal completion bonus
+      dispatchEvent?.({ type: 'GOAL_COMPLETED', goalId: goal.id, xp: 200, goalTitle: goal.title });
       onComplete();
     } catch (error) {
       console.error('Failed to complete goal:', error);
@@ -1803,7 +1810,19 @@ function GoalsPageContent() {
 
   const { data: rawGoals, isLoading, refetch, error: goalsError } = useAction3Goals();
   const { data: progress } = useAction3Progress();
+  const { data: masteryData } = useAction3SkillTreeMasteries();
+  const { data: nodesData } = useAction3SkillTreeNodes('');
   const goals = (rawGoals || []) as GoalWithMilestones[];
+
+  // Build radar skills from skill tree
+  const radarSkills = React.useMemo(() => {
+    if (!masteryData || !nodesData) return null;
+    const topNodes = (nodesData || []).slice(0, 6);
+    return topNodes.map(n => {
+      const m = masteryData?.find((x: { skillNodeId: string; masteryScore: number }) => x.skillNodeId === n.id);
+      return { label: n.title, value: m?.masteryScore ?? 0, max: 100 };
+    });
+  }, [masteryData, nodesData]);
 
   const handleGoalCreated = () => {
     refetch();
@@ -1841,6 +1860,75 @@ function GoalsPageContent() {
           </ErrorBoundary>
         ) : (
           <>
+            {/* === Unified Dashboard === */}
+            {!isLoading && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: 16,
+                marginBottom: 32,
+              }}>
+                {/* Level + XP */}
+                <BentoCard>
+                  <LevelBadge
+                    level={state.user.level}
+                    xp={state.user.totalXP}
+                    nextLevelXP={1000}
+                  />
+                </BentoCard>
+
+                {/* Streak */}
+                <BentoCard>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <FlameIcon size={44} intensity={Math.min(1, state.user.currentStreak / 7)} />
+                    <div>
+                      <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono, monospace)', letterSpacing: '-0.02em' }}>
+                        {state.user.currentStreak}
+                        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 400, marginLeft: 4 }}>天</span>
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 2 }}>连续打卡</div>
+                    </div>
+                  </div>
+                </BentoCard>
+
+                {/* Today's Progress Ring */}
+                <BentoCard>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <div style={{ position: 'relative', display: 'inline-flex' }}>
+                      <ProgressRing
+                        progress={progress ? (progress as Record<string, unknown>).todayProgress as number ?? 0 : 0}
+                        size={100} stroke={7} color="#10b981"
+                      />
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                          {progress ? (progress as Record<string, unknown>).todayProgress as number ?? 0 : 0}%
+                        </span>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>今日进度</span>
+                  </div>
+                </BentoCard>
+
+                {/* Stats */}
+                <BentoCard>
+                  <div style={{ display: 'flex', gap: 16 }}>
+                    <StatCounter value={goals.length} label="目标" />
+                    <StatCounter value={goals.filter(g => g.totalProgress === 100).length} label="已完成" />
+                  </div>
+                </BentoCard>
+
+                {/* Skill Radar */}
+                {radarSkills && radarSkills.length >= 3 && (
+                  <BentoCard>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                      <SkillRadar size={160} skills={radarSkills} />
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>技能雷达</span>
+                    </div>
+                  </BentoCard>
+                )}
+              </div>
+            )}
+
             <div style={{
               display: 'flex',
               alignItems: 'center',

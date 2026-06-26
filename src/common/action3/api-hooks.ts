@@ -233,6 +233,15 @@ export function useAction3ProgressUpdateStreak() {
   });
 }
 
+export function useAction3XPAdd() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (amount: number) =>
+      apiCall('xp.add', { amount }) as Promise<{ totalXP: number; level: number; leveledUp: boolean }>,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['action3', 'progress'] }),
+  });
+}
+
 // ============================================================
 // Recommendation Hooks
 // ============================================================
