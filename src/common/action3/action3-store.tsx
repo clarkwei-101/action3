@@ -146,9 +146,16 @@ export function Action3StoreProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAction3Store() {
-  const ctx = useContext(Action3Context);
-  if (!ctx) throw new Error('useAction3Store must be used inside Action3StoreProvider');
-  return ctx;
+  const ctx = useAction3Context();
+  return ctx ?? {
+    state: INITIAL_STATE,
+    dispatchEvent: () => {},
+    dismissToast: () => {},
+    setActiveGoal: () => {},
+    setActiveSkill: () => {},
+    setActiveMilestone: () => {},
+    updateUser: () => {},
+  };
 }
 
 // ============================================================
