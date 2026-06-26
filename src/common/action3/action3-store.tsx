@@ -106,6 +106,7 @@ interface Action3ContextValue {
 }
 
 const Action3Context = createContext<Action3ContextValue | null>(null);
+export const useAction3Context = () => useContext(Action3Context);
 
 export function Action3StoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(action3Reducer, INITIAL_STATE);

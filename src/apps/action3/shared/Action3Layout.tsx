@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { Action3StoreProvider } from '~/common/action3/action3-store';
+import { Action3ToastLayer } from '~/common/action3/components/ToastLayer';
 
 // ============================================================
 // Achievement Unlock Context
@@ -1033,6 +1034,9 @@ export function Action3Layout({ children }: { children: React.ReactNode }) {
           </div>
         )}
       </div>
+
+      {/* Global Toast Layer - visible on every page */}
+      <Action3ToastLayer />
       </UnlockContext.Provider>
     </Action3StoreProvider>
   );

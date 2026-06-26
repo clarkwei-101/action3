@@ -11,6 +11,7 @@ import {
   useAction3UpdateSkillMastery,
   useAction3UpdateSkillPosition,
 } from '~/common/action3/api-hooks';
+import { useAction3Store } from '~/common/action3/action3-store';
 
 const categories = [
   { key: '', label: '全部' },
@@ -37,6 +38,7 @@ function SkillTreeContent() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [masterySliderValue, setMasterySliderValue] = useState(0);
+  const { dispatchEvent } = useAction3Store();
 
   const nodes = useAction3SkillTreeNodes(selectedCategory || undefined);
   const edges = useAction3SkillTreeEdges();
@@ -68,9 +70,22 @@ function SkillTreeContent() {
 
   const handleMasteryUpdate = () => {
     if (selectedNodeId) {
+      const prev = masteries.data?.find(m => m.skillNodeId === selectedNodeId)?.masteryScore ?? 0;
+      const node = nodes.data?.find(n => n.id === selectedNodeId);
       updateMastery.mutate(
         { skillNodeId: selectedNodeId, masteryScore: masterySliderValue },
-        { onSuccess: () => masteries.refetch() },
+        {
+          onSuccess: () => {
+            masteries.refetch();
+            dispatchEvent?.({
+              type: masterySliderValue === 100 ? 'SKILL_MASTERED' : 'SKILL_PROGRESS',
+              skillId: selectedNodeId,
+              skillName: node?.title ?? 'Unknown',
+              masteryScore: masterySliderValue,
+              previousScore: prev,
+            });
+          },
+        },
       );
     }
   };

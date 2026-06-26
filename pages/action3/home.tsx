@@ -4,10 +4,11 @@ import * as React from 'react';
 import { useState, useEffect, Component, ReactNode } from 'react';
 import { withNextJSPerPageLayout } from '~/common/layout/withLayout';
 import { Action3Layout } from '~/apps/action3/shared/Action3Layout';
-import { useAction3Goals, useAction3GoalCreate, useAction3GoalComplete, useAction3GoalDelete, useAction3TasksByGoal, useAction3TaskComplete, useAction3AIWorkflowGenerate, useAction3AIWorkflowCreate, useAction3ResearchMutation, useAction3MilestoneResearchMutation } from '~/common/action3/api-hooks';
+import { useAction3Goals, useAction3GoalCreate, useAction3GoalComplete, useAction3GoalDelete, useAction3TasksByGoal, useAction3TaskComplete, useAction3AIWorkflowGenerate, useAction3AIWorkflowCreate, useAction3ResearchMutation, useAction3MilestoneResearchMutation, useAction3Progress } from '~/common/action3/api-hooks';
 import { MilestoneQuizModal } from '~/common/action3/components/MilestoneQuizModal';
 import { YoutubeSummaryModal } from '~/common/action3/components/YoutubeSummaryModal';
 import { useTranslation } from '~/common/action3/i18n';
+import { useAction3Store, type Action3Event } from '~/common/action3/action3-store';
 import type { Goal, DailyTask } from '@prisma/client';
 
 // ============================================================
@@ -862,12 +863,14 @@ function GoalDetailView({
   onComplete,
   onDelete,
   locale,
+  dispatchEvent,
 }: {
   goal: GoalWithMilestones;
   onBack: () => void;
   onComplete: () => void;
   onDelete: () => void;
   locale?: string;
+  dispatchEvent?: (event: Action3Event) => void;
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isCompletingGoal, setIsCompletingGoal] = useState(false);
@@ -942,7 +945,18 @@ function GoalDetailView({
 
   const handleCompleteTask = async (taskId: string) => {
     try {
+      const task = tasks.find(t => t.id === taskId);
       await completeTask.mutateAsync(taskId);
+      if (task) {
+        dispatchEvent?.({
+          type: 'TASK_COMPLETED',
+          goalId: goal.id,
+          milestoneId: task.milestone?.id ?? '',
+          taskId,
+          taskTitle: task.title,
+          xpEarned: 10,
+        });
+      }
       refetch();
     } catch (error) {
       console.error('Failed to complete task:', error);
@@ -1785,8 +1799,10 @@ function GoalsPageContent() {
   const { t, locale } = useTranslation();
   const [selectedGoal, setSelectedGoal] = useState<GoalWithMilestones | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { dispatchEvent, dismissToast, state } = useAction3Store();
 
   const { data: rawGoals, isLoading, refetch, error: goalsError } = useAction3Goals();
+  const { data: progress } = useAction3Progress();
   const goals = (rawGoals || []) as GoalWithMilestones[];
 
   const handleGoalCreated = () => {
@@ -1820,6 +1836,7 @@ function GoalsPageContent() {
                 refetch();
               }}
               locale={locale}
+              dispatchEvent={dispatchEvent}
             />
           </ErrorBoundary>
         ) : (
